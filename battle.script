@@ -1,0 +1,2718 @@
+{{
+.include "common.i"
+
+.bank $0c slot 1
+.orga $4680
+.section "cscript_data" size $287f overwrite
+}}
+
+jt_cscript_entry:
+    .addr _csf_0_surprise
+    .addr _csf_1_run
+    .addr _csf_2_ai
+    .addr _csf_3_order
+    .addr _csf_4_confusion
+    .addr _csf_5_use
+    .addr _csf_6_poison
+    .addr _csf_7_recover
+    .addr _csf_8_loot
+    .addr _csf_9_meat
+    .addr _csf_a_growth
+_csf_0_surprise:
+    set r00.b = $00.b
+    set r01.b = $04.b
+    call _get_item_ambush_flags
+    set r40.b = (ambush).b & $80.b
+    set r41.b = (ambush).b & $40.b
+    set r00.b = $05.b
+    set r01.b = $07.b
+    call _get_item_ambush_flags
+    set r42.b = (ambush).b & $80.b
+    set r43.b = (ambush).b & $40.b
+    if rand $64 > $32.b
+      goto +
+    if r43.b = $40.b
++     set r40.b = $00.b
+    if rand $64 > $14.b
+      goto +
+    if r41.b = $40.b
++     set r42.b = $00.b
+    set (ambush).b = $00.b
+    if r40.b > r42.b
+      goto +
+    if r42.b > r40.b
+      goto ++
+-   exit
++   set (ambush).b = $01.b
+    set (battle_script_index).b = $00.b
+    asmcall xr_execute_script
+    goto -
+++  set (ambush).b = $02.b
+    set (battle_script_index).b = $01.b
+    asmcall xr_execute_script
+    goto -
+_get_item_ambush_flags:
+    set (ambush).b = $00.b
+--  call _init_item_index
+    call _get_r00_current_stack_size
+    if r1a.b = $00.b
+      goto +
+-   call _get_equipment
+    set r34.w = r13.w * $08.b + {data_items+$01}.w
+    set r21.b = (r34.w).b
+    set (ambush).b = (ambush).b | r21.b
+    inc r04.b
+    if r04.b <= $07.b
+      goto -
++   inc r00.b
+    if r00.b <= r01.b
+      goto --
+    return
+_csf_1_run:
+    set (run_result).b = $01.b
+    if $20.b = (battle.encounter_info).b & $20.b
+      goto +
+    if $01.b = (ambush).b
+      goto ++
+    set r00.b = $00.b
+    set r01.b = $04.b
+    call _get_agility_total
+    set r45.w = r49.w
+    set r00.b = $05.b
+    set r01.b = $07.b
+    call _get_agility_total
+    set r47.w = r49.w
+    set r47.w = r47.w + rand $32
+    if r45.w > r47.w
+      goto ++
++   set (run_result).b = $00.b
+    set (ambush).b = $02.b
+    set (battle_script_index).b = $02.b
+-   asmcall xr_execute_script
+    exit
+++  set (battle_script_index).b = $03.b
+    goto -
+_get_agility_total:
+    set r49.w = $00.b
+-   call _get_r00_current_stack_size
+    if r1a.b = $00.b
+      goto +
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.agl
+    set r49.w = r49.w + (r30.w).b
+    goto ++
++   if r00.b <= $04.b
+      set r49.w = r49.w + $64.b
+++  inc r00.b
+    if r00.b <= r01.b
+      goto -
+    return
+_csf_2_ai:
+    set r00.b = $05.b
+_L000:
+    set r02.b = $00.b
+    call _get_r00_current_stack_size
+    if r1a.b = $00.b
+      goto +
+    call _get_max_stack_size
+    call _get_monster_id
+    if r1b.b = $fe.b
+      goto ++
+    set r53.w = r1b.b + data_monster_misc
+_L001:
+    call _get_r00r02_status
+    if $00.b < r06.b & $98.b
+      set r13.w = $ff.b
+    if $02.b = r06.b & $02.b
+      set r13.w = $010e.w
+    if $01.b = r06.b & $01.b
+      set r13.w = $010f.w
+    if $00.b = r06.b & $9b.b
+      goto _L002
+    call _set_used_item_id
+    goto _L009
+_L002:
+    set r52.b = rand $ff
+    call _init_item_index
+    set r30.w = r00.b + {enemy_inventory_sizes-$05}.w
+    set r05.b = (r30.w).b
+-   set r62.w = (r53.w).b >> $04.b * $08.b + data_monster_ais + r04.b
+    if r52.b < (r62.w).b
+      goto _L003
+--  inc r04.b
+    if r04.b <= r05.b
+      goto -
+    call _init_item_index
+_L003:
+    call _get_equipment
+_L004:
+    call _get_item_data_0
+    if $00.b = r20.b & $01.b
+      goto --
+    call _set_used_item_id
+    set r32.w = r32.w + $03.b
+    set (r32).b = r04.b
+    if $20.b = r20.b & $20.b
+      goto _L005
+    if $10.b = r20.b & $10.b
+      goto _L010
+    set r15.b = rand $02 + $05.b
+-   inc r15.b
+    if r15.b > $07.b
+      set r15.b = $05.b
+    call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto -
+    goto _L008
+_L005:
+    if $10.b = r20.b & $10.b
+      goto _L011
+    if $00.b = r20.b & $80.b
+      goto _L007
+    set r50.b = $00.b
+-   set r30.w = r50.b * $0100.w + battle.data.1.current_stack
+    set r1a.b = (r30.w).b
+    if r1a.b = $00.b
+      goto _L006
+    if rand $64 > $32.b
+      goto _L006
+    set r15.b = r50.b
+    goto _L008
+_L006:
+    inc r50.b
+    if r50.b > $04.b
+      goto _L007
+    goto -
+_L007:
+    set r15.b = rand $04
+-   if r15.b > $04.b
+      call _init_target
+    call _get_target_current_stack_size
+    if r1a.b > $00.b
+      goto _L008
+    inc r15.b
+    goto -
+_L008:
+    dec r32.w
+    set (r32).b = r15.b
+_L009:
+    inc r02.b
+    if r02.b < r03.b
+      goto _L001
++   inc r00.b
+    if r00.b <= $07.b
+      goto _L000
+    exit
+_L010:
+    set r15.b = $08.b
+    goto _L008
+_L011:
+    set r15.b = $09.b
+    goto _L008
+++  if rc0.b = $01.b
+      goto +
+    set r54.b = (battle_turn).b
+    if r54.b > $05.b
+      goto ++
+    set r13.w = $f7.b
+    goto _L012
+++  if r54.b = $06.b
+      goto ++
+    set r13.w = (battle_turn).b & $01.b + $f9.b
+_L012:
+    call _init_item_index
+    goto _L004
+++  set r13.w = $f8.b
+    goto _L012
++   set r13.w = $fc.b
+    goto _L012
+_csf_3_order:
+    set r00.b = $00.b
+    set r62.w = actors
+    set r6b.b = $00.b
+--  set r02.b = $00.b
+    call _get_max_stack_size
+    set r68.w = {cscript_vars+$6c}.w + r00.b
+    set (r68).b = r03.b
+    if r03.b = $00.b
+      goto +
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.agl
+    set r6a.b = (r30.w).b
+    if r00.b <= $04.b
+      set r6a.b = r6a.b / $04.b + r6a.b
+-   set (r62).b = rand r6a.b + r6a.b
+    inc r62.b
+    set (r62).b = r00.b
+    inc r6b.b
+    inc r62.b
+    inc r02.b
+    if r02.b < r03.b
+      goto -
++   inc r00.b
+    if r00.b <= $07.b
+      goto --
+    set r60.b = $00.b
+--  set r61.b = $00.b
+-   set r62.w = r61.b * $02.b + actors
+    set r64.w = r62.w + $02.b
+    if (r62.w).b > (r64.w).b
+      goto +
+    set r66.w = (r62.w).w
+    set (r62).w = (r64.w).w
+    set (r64).w = r66.w
++   inc r61.b
+    if r61.b < r6b.b - r60.b - $01.b
+      goto -
+    inc r60.b
+    if r60.b < r6b.b
+      goto --
+    set r60.b = $00.b
+-   set r62.w = r60.b * $02.b + {actors+$01}.w
+    set r64.w = (r62.w).b + {cscript_vars+$6c}.w
+    dec r62.b
+    set (r62).b = (r64.w).b - $01.b
+    set (r64).w = (r64.w).w - $01.b
+    inc r60.b
+    if r60.b < r6b.b
+      goto -
+    exit
+_csf_4_confusion:
+    call _get_current_actor
+    call _get_status
+    if $00.b < r06.b & $03.b
+      goto +
+    set (battle_script_index).b = $5b.b
+    asmcall xr_execute_script
+    set (script_arg_battle).w = r12.b
+    set (battle_script_index).b = $19.b
+    asmcall xr_execute_script
+    if rand $64 > $0a.b
+      goto ++
+    set r06.b = r06.b & $f7.b
+    call _set_status
+    set (battle_script_index).b = $4d.b
+    asmcall xr_execute_script
+    goto +
+++  set (battle_script_index).b = $05.b
+    asmcall xr_execute_script
+    call _init_battle_stat_offset_status
+    call _add_battle_stat_offset
+    set r52.b = rand $07 * $03.b
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.inventory + r52.b
+    set r13.w = (r30.w).b
+    call _get_item_data_0
+    if $01.b = r20.b & $01.b
+      goto ++
+-   set r13.w = $ff.b
+    goto _L014
+++  if $10.b = r20.b & $10.b
+      goto ++
+    set r15.b = rand $07
+    call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto -
+    goto _L013
+++  set r15.b = rand $01 + $08.b
+_L013:
+    set r36.w = r32.w + {battle.data.1.stat.1.target-battle.data.1.stat.1}.b
+    set (r36).b = r15.b
+_L014:
+    set r36.w = r32.w + {battle.data.1.stat.1.item_id-battle.data.1.stat.1}.b
+    set (r36).w = r13.w
+    set r36.w = r32.w + {battle.data.1.stat.1.item_slot_index-battle.data.1.stat.1}.b
+    set (r36).b = r52.b
++   exit
+_csf_6_poison:
+    call _init_target
+--  call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto +
+    call _get_target_max_stack_size
+-   call _get_target_status
+    if $00.b < r07.b & $90.b
+      goto ++
+    if $00.b = r07.b & $04.b
+      goto ++
+    set (script_arg_battle).w = r15.b
+    set (battle_script_index).b = $19.b
+    asmcall xr_execute_script
+    if rand $64 <= $14.b
+      goto _L015
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.hp
+    set r74.w = (r30.w).w / $14.b
+    set r74.w = rand r74.b + r74.w + $01.b
+    call _get_target_hp_addr
+    set (script_arg_uint16).w = r74.w
+    set (battle_script_index).b = $06.b
+    asmcall xr_execute_script
+    set r0a.w = (r32.w).w -- r74.w
+    set (r32).w = r0a.w
+    call _death_check
+    if r76.b = $00.b
+      goto ++
+    call _target_fell_message
+    goto ++
+_L015:
+    set (r32).b = r07.b & $fb.b
+    set (battle_script_index).b = $4e.b
+    asmcall xr_execute_script
+++  inc r16.b
+    if r16.b < r03.b
+      goto -
++   inc r15.b
+    if r15.b <= $07.b
+      goto --
+    exit
+_csf_7_recover:
+    set r00.b = $00.b
+--  call _get_r00_current_stack_size
+    if r1a.b = $00.b
+      goto _L017
+    call _init_item_index
+-   call _get_equipment
+    if $fe.b = r13.b
+      goto +
+    if $7e.b = r13.b
+      goto ++
+    goto _L016
+++  call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.race
+    if (r30.w).b = $03.b
+      goto +
+_L016:
+    inc r04.b
+    if r04.b <= $07.b
+      goto -
+_L017:
+    inc r00.b
+    if r00.b <= $07.b
+      goto --
+    exit
++   set r76.b = $00.b
+    set (script_arg_battle).w = r00.b
+    set (battle_script_index).b = $09.b
+    set r02.b = $00.b
+    call _get_max_stack_size
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.hp
+    set r0c.w = (r30.w).w
+-   call _get_r00r02_status
+    if $00.b < r06.b & $90.b
+      goto +
+    set r32.w = {battle.data.1.stat.1.hp-battle.data.1.stat.1}.b
+    call _add_r0r2_battle_stat_offset
+    set r08.w = (r32.w).w
+    set r0a.w = r0c.w / $0a.b + r08.w
+    if r0a.w > r0c.w
+      set r0a.w = r0c.w
+    set (r32).w = r0a.w
+    if r0a.w > r08.w
+      set r76.b = $01.b
++   inc r02.b
+    if r02.b < r03.b
+      goto -
+    if r76.b = $01.b
+      asmcall xr_execute_script
+    goto _L017
+_csf_8_loot:
+    set r00.b = $05.b
+    set r77.l = $00.b
+    set (meat_flag).b = $00.b
+-   call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.max_stack
+    set r19.b = (r30.w).b
+    if r19.b = $00.b
+      goto _L018
+    call _get_monster_id
+    set r7a.w = r1b.b + data_monster_drops
+    set r7a.w = (r7a.w).b & $1f.b * $02.b + data_gold_drops
+    set r77.l = (r7a.w).w / $0a.b * r19.b + (r7a.w).w * r19.b + r77.l
+    set r36.w = data_monster_drops + r1b.b
+    set r38.b = $00.b
+    set r38.b = (r36.w).b >> $06.b & $01.b * $50.b
+    set r38.b = (r36.w).b >> $05.b & $01.b * $14.b + r38.b + r19.b
+    if rand $64 <= r38.b
+      goto +
+_L018:
+    inc r00.b
+    if r00.b <= $07.b
+      goto -
+    call _add_gp
+    exit
++   if $80.b = (r36.w).b & $80.b
+      goto +
+    set r30.w = r00.b + {enemy_inventory_sizes-$05}.w
+    set r04.b = (r30.w).b
+    set r04.b = rand r04.b
+    call _get_equipment
+    if r13.w > $7f.b
+      goto _L018
+    set r36.w = data_item_usage + r13.b
+    set r38.b = (r36.w).b
+    set r02.b = $00.b
+-   set r34.w = r02.b * $02.b + inventory
+    if $ff.b = (r34.w).b
+      goto ++
+    inc r02.b
+    if r02.b <= $10.b
+      goto -
+    goto _L018
+++  set (r34).b = r13.b
+    inc r34.w
+    set (r34).b = r38.b
+    call _add_gp
+    set (script_arg_battle).w = r13.b
+    set (battle_script_index).b = $0b.b
+    asmcall xr_execute_script
+    exit
++   call _add_gp
+    set r10.b = r1b.b
+    set (meat_flag).b = $01.b
+    set ({script_arg_battle+$02}).w = r00.b
+    set (battle_script_index).b = $0c.b
+    asmcall xr_execute_script
+    exit
+_add_gp:
+    set r7c.l = (gp).l
+    set r77.l = r77.l + r7c.l
+    set r4b.l = (data_const_999999).l
+    if r77.l > r4b.l
+      set r77.l = r4b.l
+    set (script_arg_uint16).w = r77.l - r7c.l
+    set (battle_script_index).b = $0a.b
+    asmcall xr_execute_script
+    set (gp).l = r77.l
+    return
+_csf_9_meat:
+    set (transformation_flag).b = $00.b
+    set r30.w = (transformation_index).b * $0100.w + battle.data.1.race
+    set r89.b = (r30.w).b
+    if r89.b = $02.b
+      goto +
+-   set (battle_script_index).b = $0d.b
+    asmcall xr_execute_script
+    exit
++   set r30.w = (transformation_index).b * $0100.w + battle.data.1.monster_id
+    set r1b.b = (r30.w).b
+    set r36.w = data_monster_family + r1b.b
+    set r38.b = (r36.w).b
+    set r81.b = r38.b / $10.b
+    set r82.b = r38.b & $0f.b
+    set r36.w = $7800.w + r10.b
+    set r38.b = (r36.w).b
+    set r83.b = r38.b / $10.b
+    if r83.b > $05.b
+      inc r83.b
+    set r84.b = r38.b & $0f.b
+    set r85.b = r81.b + r83.b
+    if r85.b < $06.b
+      set r85.b = r85.b + $0c.b
+    if r85.b > $11.b
+      set r85.b = r85.b - $0c.b
+    set r85.b = r85.b - $06.b
+    set r86.b = r82.b + r84.b -- $01.b
+    if r86.b > $02.b
+      set r86.b = $02.b
+    set r36.w = data_monster_misc + r1b.b
+    set r87.b = (r36.w).b & $0f.b
+    set r36.w = data_monster_misc + r10.b
+    if r87.b < (r36.w).b & $0f.b
+      set r87.b = (r36.w).b & $0f.b
+    set r88.w = r85.b * $03.b + r86.b * $10.b + r87.b + data_monster_transformation
+    set (transformation_result).b = (r88.w).b
+    if r1b.b = (transformation_result).b
+      goto -
+    set (transformation_flag).b = $01.b
+    set ({script_arg_battle+$02}).w = r1b.b
+    set ({script_arg_battle+$04}).w = (transformation_result).b
+    set (battle_script_index).b = $0e.b
+    asmcall xr_execute_script
+    exit
+_csf_a_growth:
+    set r1b.b = (battle.data.5.monster_id).b
+    set r36.w = data_monster_misc + r1b.b
+    set r1c.b = (r36.w).b & $0f.b
+    set r00.b = $00.b
+--  set r12.b = r00.b * $02.b
+    call _get_player_data_offset_upper
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.race
+    set r89.b = (r30.w).b
+    if r89.b > $01.b
+      goto _L019
+    set r02.b = $00.b
+    call _get_r00r02_status
+    if $00.b < r06.b & $b0.b
+      goto _L019
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.hp
+    set r0c.w = (r30.w).w
+    set rb3.b = r0c.b / $1a.b + $32.b
+    set r0e.w = r0c.w / rb3.b
+    set r94.w = r89.b * $10.b + data_growth_table
+    call _get_growth_chance
+    if rand $c8 < r96.b
+      goto +
+    set r94.w = r89.b * $10.b + {data_growth_table+$02}.w
+    call _get_growth_chance
+    if rand $c8 <= r96.b
+      goto ++
+    set r36.w = r00.b * $02.b + last_used
+    set r36.w = data_item_robot_stats + (r36.w).w
+    set r38.b = (r36.w).b
+    set r61.b = $00.b
+-   if $00.b < r38.b & $80.b
+      goto _L020
+    set r38.b = r38.b << $01.b
+    inc r61.b
+    if r61.b <= $03.b
+      goto -
+_L019:
+    inc r00.b
+    if r00.b <= $03.b
+      goto --
+    exit
++   set r60.b = $00.b
+    set r8a.w = r1c.b * $18.b + $0f.b
+    if r8a.w > $ff.b
+      set r8a.w = $ff.b
+    set r52.b = rand r8a.b
+-   set r36.w = data_ability_learning_thresholds + r60.b
+    if r52.b <= (r36.w).b
+      goto +
+    inc r60.b
+    if r60.b <= $20.b
+      goto -
+    goto _L019
++   set r36.w = data_ability_learning_results + r60.b
+    set r38.b = (r36.w).b
+    set rb7.b = $00.b
+    call _init_item_index
+    set r8c.w = rd0.b + player.1.inventory
+-   set r36.w = r04.b * $02.b + r8c.w
+    if (r36.w).b >= $80.b
+      inc rb7.b
+    if (r36.w).b = $ff.b
+      dec rb7.b
+    if rb7.b = $04.b
+      goto +
+    inc r04.b
+    if r04.b <= $07.b
+      goto -
+    call _init_item_index
+-   set r36.w = r04.b * $02.b + r8c.w
+    if (r36.w).b = $ff.b
+      goto +
+    inc r04.b
+    if r04.b <= $07.b
+      goto -
+    set r04.b = $08.b
+-   dec r04.b
+    set r36.w = r04.b * $02.b + r8c.w
+    if (r36.w).b > $7f.b
+      goto +
+    if r04.b > $00.b
+      goto -
+    goto _L019
++   set (script_arg_battle).w = r00.b
+    set (battle_script_index).b = $0f.b
+    asmcall xr_execute_script
+    if (r36.w).b = $ff.b
+      goto +
+    set (script_arg_battle).w = (r36.w).b
+    set (battle_script_index).b = $10.b
+    asmcall xr_execute_script
++   set r8c.w = r04.b * $02.b + r8c.w
+    set (r8c).b = r38.b
+    set (script_arg_battle).w = r38.b
+    set r36.w = data_item_usage + r38.b
+    set r38.b = (r36.w).b
+    inc r8c.w
+    set (r8c).b = r38.b
+    set (battle_script_index).b = $11.b
+    asmcall xr_execute_script
+    goto _L019
+++  if r0c.w >= $03e7.w
+      goto _L019
+    set r0e.w = r0c.w / $32.b + rand $0a + $05.b + r0c.w
+    set r8e.w = rd0.b + player.1.max_hp
+    set (r8e).w = r0e.w
+    set (script_arg_battle).w = r00.b
+    set (script_arg_uint16).w = r0e.w - r0c.w
+    set (battle_script_index).b = $12.b
+    asmcall xr_execute_script
+    goto _L019
+_L020:
+    set r94.w = r89.b * $05.b + r61.b * $02.b + {data_growth_table+$04}.w
+    set r96.b = (r94.w).b
+    inc r94.w
+    set r90.w = rd0.b + player.1.str + r61.b
+    set r92.b = (r90.w).b
+    if r92.b >= $63.b
+      goto _L019
+    set rb3.b = r92.b / $14.b + $05.b
+    set r93.b = r92.b * (r94.w).b / rb3.b
+    set r96.b = r1c.b * (r94.w).b -- r93.b + r96.b
+    if rand $c8 <= r96.b
+      goto +
+    goto _L019
++   inc r92.b
+    set (r90).b = r92.b
+    set (script_arg_battle).w = r00.b
+    set (battle_script_index).b = $0f.b
+    asmcall xr_execute_script
+    set (battle_script_index).b = $13.b + r61.b
+    asmcall xr_execute_script
+    set (battle_script_index).b = $08.b
+    asmcall xr_execute_script
+    goto _L019
+_get_growth_chance:
+    set r96.b = (r94.w).b
+    inc r94.w
+    set r97.b = r0e.b * (r94.w).b
+    set r96.b = r1c.b * (r94.w).b -- r97.b + r96.b
+    return
+_csf_5_use:
+    if $00.b = (hram.battle_flag).b
+      goto +
+    call _get_current_actor
+    set (battle_script_index).b = $5b.b
+    if $00.b = (current_actor_index).b
+      goto ++
+    asmcall xr_execute_script
+++  call _get_status
+    set r32.w = {battle.data.1.stat.1.item_id-battle.data.1.stat.1}.b
+    call _add_battle_stat_offset
+    set r13.w = (r32.w).w
+    set r32.w = r32.w + {battle.data.1.stat.1.target-battle.data.1.stat.1.item_id}.b
+    set r15.b = (r32.w).b
+    if r15.b >= $08.b
+      goto ++
+    if r13.w >= $010e.w
+      goto ++
+    call _get_target_current_stack_size
+    if r1a.b > $00.b
+      goto ++
+    set r13.w = $ff.b
+    inc r32.w
+    set (r32).b = $ff.b
+++  set r34.w = r13.w * $08.b + {data_items+$03}.w
+    set r23.b = (r34.w).b
+    call _get_item_data_4
+    call _get_item_data_5
+    call _get_adjusted_str
+    call _get_target_raw_def
+    set (script_arg_battle).w = r12.b
+    set ({script_arg_battle+$02}).w = r13.w
+    call _set_target_script_arg
+    set ra0.w = r23.b * $02.b + jt_cscript_battle_item
+    set ra0.w = (ra0.w).w
+    call ra0.w
+    if $ff.b = (battle.data.5.monster_id).b
+      goto ++
+    exit
+++  if rc0.b > $00.b
+      goto ++
+    set r0a.w = (battle.data.5.stat.1.hp).w
+    set r0a.w = (battle.data.5.hp).w - r0a.w
+    set r60.b = $00.b
+-   set r30.w = {cscript_vars+$cb}.w + r60.b
+    if (r30.w).b = $00.b
+      goto _L021
+    inc r60.b
+    if r60.b <= $03.b
+      goto -
+_L021:
+    set r30.w = r60.b * $02.b + {cscript_vars+$c3}.w
+    set (r30).w = (r30.w).w + r0a.w
+    if (r30.w).w > $03e8.w
+      goto _L022
+-   set (battle.data.5.stat.1.hp).w = (battle.data.5.hp).w
+    exit
+_L022:
+    set (battle_script_index).b = $6b.b
+    set (script_arg_uint16).w = r60.b + $01.b
+    asmcall xr_execute_script
+    set r30.w = {cscript_vars+$cb}.w + r60.b
+    set (r30).b = $01.b
+    inc rcf.b
+    if rcf.b > $03.b
+      inc rc0.b
+    goto -
+++  if rc0.b > $01.b
+      goto ++
+    set r0a.w = (battle.data.5.stat.1.hp).w
+    if r0a.w > $1388.w
+      goto ++
+    set rc0.b = $02.b
+++  exit
++   if rf0.w <= $ff.b
+      goto +
+    if $03.b = ({script_vars+$06}).b
+      goto ++
++   set r12.b = rf3.b * $02.b
+    call _get_player_data_offset_upper
+    set r94.b = rd0.b
+    set r12.b = rf2.b * $02.b
+    call _get_player_data_offset_upper
+    set r88.b = rd0.b
+    set r34.w = rf0.w * $08.b + {data_items+$03}.w
+    set r23.b = (r34.w).b
+    set r34.w = rf0.w * $08.b + {data_items+$04}.w
+    set r24.b = (r34.w).b
+    set rf4.b = $00.b
+    set ra0.w = r23.b * $02.b + jt_cscript_menu_item
+    set ra0.w = (ra0.w).w
+    call ra0.w
+    exit
+++  set rf4.b = $09.b
+    exit
+jt_cscript_battle_item:
+    .addr _item_00_healing_magic
+    .addr _item_01_healing_potion
+    .addr _item_02_status_potion
+    .addr _item_03_nothing
+    .addr _item_04_paralyzed
+    .addr _item_05_sleeping
+    .addr _item_06_shield
+    .addr _item_07_elemental_shield
+    .addr _item_08_counter
+    .addr _item_09_heal_all_magic
+    .addr _item_0a_elemental_str_weapon
+    .addr _item_0b_heart
+    .addr _item_0c_monster_slayer_str_weapon
+    .addr _item_0d_draining_mana_weapon
+    .addr _item_0e_agl_weapon
+    .addr _item_0f_mana_weapon
+    .addr _item_10_xcal
+    .addr _item_11_absolute_str_weapon
+    .addr _item_12_saw
+    .addr _item_13_gun
+    .addr _item_14_bow
+    .addr _item_15_multi_gun
+    .addr _item_16_laser
+    .addr _item_17_all_gun
+    .addr _item_18_whip
+    .addr _item_19_hyper
+    .addr _item_1a_elemental_magic
+    .addr _item_1b_status_magic
+    .addr _item_1c_monster_slayer_magic
+    .addr _item_1d_martial_arts
+    .addr _item_1e_multi_hit
+    .addr _item_1f_status_attack
+    .addr _item_20_debuff
+    .addr _item_21_elemental_all_magic
+    .addr _item_22_explode
+    .addr _item_23_steal
+    .addr _item_24_dna
+    .addr _item_25_buff
+    .addr _item_26_self_buff
+    .addr _item_27_dissolve
+    .addr _item_28_status_all_magic
+    .addr _item_29_critical
+    .addr _item_2a_multiply
+    .addr _item_2b_apollo_aegis
+    .addr _item_2c_apollo_masmune1
+    .addr _item_2d_apollo_masmune2
+    .addr _item_2e_apollo_flare
+    .addr _item_2f_smasher
+    .addr _item_30_apollo_expode
+    .addr _item_31_str_weapon
+jt_cscript_menu_item:
+    .addr _menu_item_00_healing_magic
+    .addr _menu_item_01_healing_potion
+    .addr _menu_item_02_status_potion
+    .addr _menu_item_03_elixier
+    .addr _menu_item_04_teleport
+    .addr _menu_item_05_tent
+    .addr _menu_item_06_prism
+    .addr _menu_item_07_stat_potion
+    .addr _menu_item_08_body_potion
+    .addr _menu_item_09_heal_all_magic
+_unused_byte:
+    .db $00
+_item_03_nothing:
+    set (battle_script_index).b = $17.b
+    goto _execute_script
+_item_04_paralyzed:
+    set (battle_script_index).b = $18.b
+    asmcall xr_execute_script
+    if rand $64 <= r24.b
+      goto +
+    return
++   set r06.b = r06.b & $fd.b
+    call _set_status
+    set (battle_script_index).b = $4f.b
+    goto _execute_script
+_item_05_sleeping:
+    set (battle_script_index).b = $1a.b
+    asmcall xr_execute_script
+    if rand $64 <= r24.b
+      goto +
+    return
++   set r06.b = r06.b & $fe.b
+    call _set_status
+    set (battle_script_index).b = $50.b
+    goto _execute_script
+_item_06_shield:
+    set (battle_script_index).b = $1c.b
+    goto _execute_script
+_item_07_elemental_shield:
+    call _item_06_shield
+    call _play_item_sound
+    if r12.b > $04.b
+      goto +
+    if r15.b = $09.b
+      goto ++
+--  call _setup_party_loop
+    set (battle_script_index).b = $1d.b
+    asmcall xr_execute_script
+-   call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.resist
+    set (r30).b = (r30.w).b | r24.b
+    inc r15.b
+    if r15.b <= r01.b
+      goto -
+    return
++   if r15.b = $09.b
+      goto --
+++  call _setup_enemy_loop
+    set (battle_script_index).b = $1e.b
+    asmcall xr_execute_script
+    goto -
+_item_08_counter:
+    set (battle_script_index).b = $1f.b
+    goto _execute_script
+_item_31_str_weapon:
+    call _hit_check
+    call _adjust_def_curse
+    call _adjust_def_magi
+    call _roll_str_vs_def
+_handle_weapon_roll:
+    call _adjust_weapon_damage
+_handle_damage_roll:
+    if r74.w > $00.b
+      goto +
+    call _no_damage_message
+    goto _handle_defending_item
++   call _play_item_sound
+    call _play_item_animation
+    call _damage_message
+    call _apply_damage
+    if r76.b = $00.b
+      goto _handle_defending_item
+_target_fell_message:
+    set (battle_script_index).b = $24.b
+    goto _execute_script
+_item_0a_elemental_str_weapon:
+    call _get_target_weakness
+    if $00.b = ra7.b & r25.b
+      goto _item_31_str_weapon
+    goto _item_29_critical
+_item_0c_monster_slayer_str_weapon:
+    call _get_target_family
+    if r25.b = ra9.b & $f0.b
+      goto _item_29_critical
+    goto _item_31_str_weapon
+_item_0d_draining_mana_weapon:
+    call _hit_check
+    call _get_adjusted_mana
+    call _roll_mana_vs_nothing
+    call _get_target_family
+    if r25.b = ra9.b & $f0.b
+      goto _L028
+    call _play_item_sound
+    call _play_item_animation
+    call _damage_message
+    call _apply_damage
+    if ra9.b >= $20.b
+      goto _L026
+    set (battle_script_index).b = $25.b
+    asmcall xr_execute_script
+    goto _L027
+_L026:
+    call _absorb_hp
+    set (battle_script_index).b = $26.b
+    asmcall xr_execute_script
+_L027:
+    if r76.b = $00.b
+      goto _handle_defending_item
+    goto _target_fell_message
+_L028:
+    set (battle_script_index).b = $27.b
+    asmcall xr_execute_script
+    call _apply_damage_to_attacker
+    call _get_target_hp_addr
+    set (r32).w = (r32.w).w + rb5.w
+    call _cap_healing
+    set (script_arg_uint16).w = rb5.w
+    set (battle_script_index).b = $28.b
+    asmcall xr_execute_script
+    if r08.w > $00.b
+      return
+    call _attacker_fell_message
+    goto _handle_attacker_death
+_item_00_healing_magic:
+    call _helpful_attack_message
+    call _get_adjusted_mana
+    call _get_target_adjusted_mana
+    call _roll_healing_mana_vs_mana
+    call _play_item_sound
+    call _play_item_animation2
+    call _healing_message
+    call _get_target_max_stack_size
+-   call _get_target_status
+    if $00.b < r07.b & $90.b
+      goto _L029
+    call _get_target_hp_addr
+    set (r32).w = (r32.w).w + rb5.w
+    call _cap_healing
+_L029:
+    inc r16.b
+    if r16.b < r03.b
+      goto -
+    return
+_item_0e_agl_weapon:
+    call _hit_check
+    call _adjust_def_curse
+    call _adjust_def_magi
+    set rb8.b = rand rab.b
+    call _get_target_def_mitigation
+    set r74.w = rab.b * r24.b + rb8.b -- r74.w
+    goto _handle_weapon_roll
+_item_0f_mana_weapon:
+    call _hit_check
+    call _adjust_def_curse
+    call _adjust_def_magi
+    call _get_adjusted_mana
+    set rb8.b = rand rac.b
+    call _get_target_def_mitigation
+    set r74.w = rac.b * r24.b + rb8.b -- r74.w
+    goto _handle_weapon_roll
+_item_10_xcal:
+    call _single_or_multi_attack_message
+    call _get_target_resist
+    if r25.b > raa.b
+      set raa.b = r25.b
+    call _roll_str_vs_def
+    call _apply_weapon_resist
+    if r74.w = $00.b
+      goto _L030
+    call _play_item_sound
+    call _play_item_animation
+    goto _apply_damage_multi
+_L030:
+    goto _no_damage_message
+_item_11_absolute_str_weapon:
+    call _attack_message
+    call _get_first_target
+    set r74.w = rand raa.b + r24.w
+    call _play_item_sound
+    call _play_item_animation
+    call _damage_message
+    call _apply_damage
+    if r76.b = $00.b
+      return
+    goto _target_fell_message
+_item_12_saw:
+    call _attack_message
+    call _get_first_target
+    call _get_target_item
+    call _get_target_item_data_1
+    if $00.b = rb0.b & $08.b
+      goto _L032
+    call _get_target_item_data_5
+    if rand $64 > rb2.b
+      goto _L032
+    set (script_arg_battle).w = r17.w
+    set (battle_script_index).b = $2c.b
+    goto _execute_script
+_L032:
+    if rand $64 <= r24.b + raa.b
+      goto _L033
+_missed_message:
+    set (hram.audio.sfx).b = $15.b
+    set (battle_script_index).b = $21.b
+    goto _execute_script
+_L033:
+    call _adjust_def_curse
+    set r74.w = r25.b + raa.b
+    call _adjust_weapon_damage
+    call _adjust_def_magi
+    if r74.b > ra5.b
+      goto _L034
+-   set (hram.audio.sfx).b = $08.b
+    set (battle_script_index).b = $2d.b
+    goto _execute_script
+_L034:
+    call _get_target_monster_id
+    if ra8.b >= $f8.b
+      goto -
+    call _play_item_sound
+    call _play_item_animation
+    set (battle_script_index).b = $2e.b
+    asmcall xr_execute_script
+    call _get_target_hp_addr
+    set r0a.w = $00.b
+    set (r32).w = r0a.w
+    goto _death_check
+_item_13_gun:
+    call _attack_message
+    call _get_first_target
+    call _get_race
+    set r89.b = r89.b -- $02.b + $01.b
+    set rb3.b = raa.b * r89.b + r25.b
+_gun_bow_helper:
+    if rand $64 <= rb3.b
+      goto _L035
+    goto _missed_message
+_L035:
+    call _adjust_def_curse
+    call _get_target_item
+    call _get_target_item_data_1
+    call _get_target_item_data_5
+    call _adjust_def_magi
+    set rb8.b = rand r25.b * r89.b
+    call _get_target_def_mitigation
+    set r74.w = r24.b * $05.b + rb8.b -- r74.w
+    call _adjust_weapon_damage
+    if r74.w > $00.b
+      goto _L036
+    goto _no_damage_message
+_L036:
+    call _play_item_sound
+    call _play_item_animation
+    call _damage_message
+    call _apply_damage
+    if r76.b = $00.b
+      return
+    goto _target_fell_message
+_item_14_bow:
+    call _attack_message
+    call _get_first_target
+    call _get_adjusted_agl
+    set rb3.b = rab.b * $02.b + r25.b
+    goto _gun_bow_helper
+    goto _missed_message
+_item_15_multi_gun:
+    call _single_or_multi_attack_message
+    call _get_race
+    set r89.b = r89.b -- $02.b + $01.b
+    set r32.w = r15.b * $0100.w + battle.data.1.resist
+    set ra6.b = (r32.w).b
+    call _adjust_def_magi
+    set rb8.b = rand r24.b / $02.b * r89.b
+    call _get_target_def_mitigation
+    set r74.w = r24.b * $05.b + rb8.b -- r74.w
+    call _apply_weapon_resist
+    if r74.w = $00.b
+      goto _L037
+    call _play_item_sound
+    call _play_item_animation
+    goto _apply_damage_multi
+_L037:
+    goto _no_damage_message
+_item_16_laser:
+    call _attack_message
+    call _get_first_target
+    call _get_adjusted_agl
+    set rb3.b = r25.b + rab.b
+    goto _L038
+    goto _missed_message
+_L038:
+    set rb8.b = rand r25.b
+    set r74.w = r24.b * $05.b + rb8.b
+    call _play_item_sound
+    call _play_item_animation
+    call _damage_message
+    call _apply_damage
+    if r76.b = $00.b
+      return
+    goto _target_fell_message
+_item_17_all_gun:
+    set r74.w = rand r25.b + r24.b * $02.b
+    call _start_all_attack
+-   call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L039
+    call _apply_damage_multi
+_L039:
+    inc r15.b
+    if r15.b <= r01.b
+      goto -
+    return
+_item_18_whip:
+    call _hit_check
+    call _adjust_def_curse
+    call _adjust_def_magi
+    call _roll_str_vs_def
+    call _adjust_weapon_damage
+    if r74.w > $00.b
+      goto _L040
+    goto _no_damage_message
+_L040:
+    call _play_item_sound
+    call _play_item_animation
+    call _damage_message
+    call _apply_damage
+    if r76.b = $00.b
+      goto _L041
+    goto _target_fell_message
+_L041:
+    if rand $64 <= r25.b
+      goto _L042
+    return
+_L042:
+    set r32.w = {battle.data.1.stat.1.item_id-battle.data.1.stat.1}.b
+    call _add_target_battle_stat_offset
+    set (r32).w = $ff.b
+    set (battle_script_index).b = $30.b
+    goto _execute_script
+_item_19_hyper:
+    call _handle_all_kill
+    if rb7.b > $00.b
+      return
+    goto _nothing_happened_message
+_handle_all_kill:
+    call _start_all_attack
+-   call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L043
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.monster_id
+    set r1b.b = (r30.w).b
+    if r1b.b > r24.b
+      goto _L043
+    call _get_target_current_stack_size
+    set (r30).b = $00.b
+    inc rb7.b
+_L043:
+    inc r15.b
+    if r15.b <= r01.b
+      goto -
+    return
+_item_01_healing_potion:
+    call _helpful_attack_message
+    call _get_first_target
+    set r74.w = rand r25.b + r24.b
+    call _get_target_hp_addr
+    set r0a.w = (r32.w).w
+    set (r32).w = (r32.w).w + r74.w
+    call _cap_healing
+    set rb5.w = (r32.w).w - r0a.w
+    call _play_item_sound
+    call _play_item_animation2
+    goto _healing_message
+_item_02_status_potion:
+    call _helpful_attack_message
+    call _get_first_target
+    call _get_target_status
+    set (r32).b = r07.b & r24.b
+    set r76.b = r07.b ^ (r32.w).b
+    call _play_item_sound
+    call _play_item_animation2
+    call _status_recovery_message
+    return
+_item_1a_elemental_magic:
+    call _single_or_multi_attack_message
+    call _handle_reflect
+    call _get_adjusted_mana
+    call _get_target_resist
+    if $00.b < ra6.b & r25.b
+      goto _resisted_magic
+    call _get_target_weakness
+    call _get_target_adjusted_mana
+    if $00.b = ra7.b & r25.b
+      goto _L044
+    set ra4.b = $00.b
+    set rac.b = rac.b + $05.b
+    call _weakness_message
+_L044:
+    call _elemental_magi_mana_adjust
+    call _roll_mana_vs_mana
+    if r74.w = $00.b
+      goto _L045
+    call _play_item_sound
+    call _play_item_animation
+    goto _apply_damage_multi
+_L045:
+    goto _no_damage_message
+_resisted_magic:
+    call _resist_message
+    goto _nothing_happened_message
+_item_1b_status_magic:
+    call _single_or_multi_attack_message
+    call _handle_reflect
+    call _get_target_resist
+    if $00.b < ra6.b & r25.b
+      goto _resisted_magic
+    call _get_target_weakness
+    call _get_target_adjusted_mana
+    call _get_adjusted_mana
+    call _mana_hit_check_with_weakness
+    if rb4.b > rand $64
+      goto _nothing_happened_message
+    call _get_target_max_stack_size
+-   call _apply_status
+    call _refresh_status
+    inc r16.b
+    if r16.b < r03.b
+      goto -
+    call _play_item_sound
+    call _play_item_animation
+    call _status_inflict_message
+    if $00.b = r24.b & $90.b
+      return
+    call _get_target_current_stack_size
+    set (r30).b = $00.b
+    return
+_item_1c_monster_slayer_magic:
+    call _single_or_multi_attack_message
+    call _get_target_family
+    if r25.b = ra9.b & $f0.b
+      goto _L047
+    goto _nothing_happened_message
+_L047:
+    call _get_adjusted_mana
+    call _roll_mana_vs_nothing
+    if r74.w = $00.b
+      goto _L048
+    call _play_item_sound
+    call _play_item_animation
+    goto _apply_damage_multi
+_L048:
+    goto _no_damage_message
+_item_1d_martial_arts:
+    call _attack_message
+    call _calculate_hit_score
+    if r76.b = $01.b
+      goto _exit
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.race
+    if (r30.w).b = $03.b
+      goto _L049
+    set r32.w = {battle.data.1.stat.1.item_slot_index-battle.data.1.stat.1}.b
+    call _add_battle_stat_offset
+    call _get_battle_data_offset_upper
+    set r30.b = {<(battle.data.1.inventory+$02)}.b
+    set r30.w = (r32.w).b * $03.b + r30.w
+    set rb9.b = (r30.w).b
+    if rb9.b = $fe.b
+_L049:
+      set rb9.b = r25.b - $05.b
+    set r52.b = rand rb9.b
+    if r52.b <= rb3.b
+      goto _L050
+    goto _missed_message
+_L050:
+    call _adjust_def_curse
+    call _adjust_def_magi
+    set rb8.b = rand rab.b
+    call _get_target_def_mitigation
+    set r74.w = r25.b - rb9.b * r24.b + rb8.b -- r74.w
+    if rb9.b = $01.b
+      set r74.w = r74.w * $03.b
+    goto _handle_weapon_roll
+_item_1e_multi_hit:
+    call _attack_message
+    call _calculate_hit_score
+    if r76.b = $01.b
+      goto _exit
+    set r00.b = $00.b
+    set rb7.b = $00.b
+    set r39.w = $00.b
+    call _adjust_def_curse
+    call _adjust_def_magi
+-   if rand $64 > rb3.b
+      goto _L051
+    inc rb7.b
+    call _roll_str_vs_def
+    call _adjust_weapon_damage
+    set r39.w = r39.w + r74.w
+_L051:
+    inc r00.b
+    if r00.b < r25.b
+      goto -
+    if rb7.b = $00.b
+      goto _L052
+    set r74.w = r39.w
+    set (script_arg_uint16).w = rb7.b
+    set (battle_script_index).b = $34.b
+    asmcall xr_execute_script
+    goto _handle_damage_roll
+_L052:
+    goto _missed_message
+_item_1f_status_attack:
+    call _attack_message
+    call _get_target_resist
+    if $00.b < ra6.b & r25.b
+      goto _L055
+    set r76.b = $00.b
+    call _get_target_max_stack_size
+-   call _get_target_status
+    if $00.b = r90.b | r24.b & r07.b
+      goto _L053
+    inc r16.b
+    if r16.b < r03.b
+      goto -
+    goto _L056
+_L053:
+    call _calculate_hit_score_with_target
+    if r76.b = $01.b
+      goto _exit
+    if rand $64 <= rb3.b
+      goto _L054
+    goto _missed_message
+_L054:
+    call _get_target_weakness
+    call _get_target_adjusted_mana
+    call _get_adjusted_mana
+    call _mana_hit_check_with_weakness
+    if rb4.b > rand $64
+      goto _L056
+    call _apply_status
+    call _refresh_status
+    call _play_item_sound
+    call _play_item_animation
+    call _status_inflict_message
+    if $00.b = r24.b & $90.b
+      return
+    goto _kill_one_target
+_L055:
+    call _resist_message
+_L056:
+    call _nothing_happened_message
+    call _get_first_target
+    set r74.w = $00.b
+    goto _handle_defending_item
+_item_20_debuff:
+    call _single_or_multi_attack_message
+    call _get_stat_address
+    if rand $64 > (r30.w).b -- r25.b
+      goto _L057
+    goto _missed_message
+_L057:
+    set rb8.b = (r30.w).b / $04.b + $01.b
+    set (r30).b = (r30.w).b -- rb8.b
+    call _play_item_sound
+    call _play_item_animation
+    call _stat_message
+    set (script_arg_uint16).w = rb8.b
+    set (battle_script_index).b = $3e.b
+    goto _execute_script
+_stat_message:
+    set (battle_script_index).b = $37.b
+    call _get_target_current_stack_size
+    if r1a.b = $01.b
+      set (battle_script_index).b = $38.b
+    asmcall xr_execute_script
+    set (battle_script_index).b = $13.b + r24.b
+    asmcall xr_execute_script
+    return
+_item_21_elemental_all_magic:
+    call _start_all_attack
+-   call _get_adjusted_mana
+    call _elemental_magi_mana_adjust
+    call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L060
+    call _set_target_script_arg
+    call _get_target_resist
+    if $00.b < ra6.b & r25.b
+      goto _L061
+    call _get_target_weakness
+    call _get_target_adjusted_mana
+    if $00.b = ra7.b & r25.b
+      goto _L059
+    set ra4.b = $00.b
+    set rac.b = rac.b + $05.b
+    call _weakness_message
+_L059:
+    call _roll_mana_vs_mana
+    if r74.w > $00.b
+      goto _L062
+    call _no_damage_message
+_L060:
+    inc r15.b
+    if r15.b <= r01.b
+      goto -
+    return
+_L061:
+    call _resist_message
+    call _nothing_happened_message
+    goto _L060
+_L062:
+    call _apply_damage_multi
+    goto _L060
+_item_22_explode:
+    call _handle_all_kill
+    call _handle_attacker_death
+    set r32.w = r12.b * $0100.w + battle.data.1.stat.1.hp
+    set r32.w = r11.b * $08.b + r32.w
+    set (r32).w = $00.b
+    call _attacker_fell_message
+    if rb7.b > $00.b
+      return
+    set (battle_script_index).b = $39.b
+    goto _execute_script
+_item_23_steal:
+    set (battle_script_index).b = $3a.b
+    asmcall xr_execute_script
+    call _get_adjusted_agl
+    if rand $64 <= rab.b + r24.b
+      goto _L063
+-   set (battle_script_index).b = $3b.b
+    goto _execute_script
+_L063:
+    set r74.w = rab.b * r25.b
+    set r77.l = (gp).l
+    if r12.b <= $04.b
+      goto _L064
+    set (gp).l = r77.l -- r74.w
+    set r7c.l = (gp).l
+    set r77.l = r77.l - r7c.l
+    if r77.w = $00.b
+      goto -
+    call _play_item_sound
+    call _play_item_animation
+    set (script_arg_uint16).w = r77.w
+    set (battle_script_index).b = $3c.b
+    goto _execute_script
+_L064:
+    set (gp).l = r77.l + r74.w
+    set r7c.l = (gp).l
+    set r4b.l = (data_const_999999).l
+    if r7c.l > r4b.l
+      set r7c.l = r4b.l
+    set (gp).l = r7c.l
+    set r77.l = r7c.l - r77.l
+    if r77.b = $00.b
+      goto -
+    call _play_item_sound
+    call _play_item_animation
+    set (script_arg_uint16).w = r77.w
+    set (battle_script_index).b = $3d.b
+    goto _execute_script
+_item_24_dna:
+    call _single_or_multi_attack_message
+    call _handle_reflect
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.race
+    set r89.b = (r30.w).b
+    if r25.b >= r89.b
+      goto _L065
+    goto _nothing_happened_message
+_L065:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.hp
+    set r0e.w = (r30.w).w
+    set rb8.b = rand r24.b
+    set r74.w = r0e.w * r24.b / r64.b + rb8.b
+    call _play_item_sound
+    call _play_item_animation
+    goto _apply_damage_multi
+_item_25_buff:
+    call _helpful_attack_message
+    call _get_stat_address
+    set r74.w = (r30.w).b + r25.b
+    if r74.w > $ff.b
+      set r74.w = $ff.b
+    set rb8.b = r74.b - (r30.w).b
+    set (r30).b = r74.b
+    call _play_item_sound
+    call _play_item_animation2
+    set (script_arg_uint16).w = rb8.b
+    call _stat_message
+    set (battle_script_index).b = $3f.b
+    goto _execute_script
+_get_stat_address:
+    call _get_target_battle_data_offset_upper
+    set r30.b = $0e.b + r24.b
+    return
+_item_26_self_buff:
+    set r15.b = r12.b
+    call _set_target_script_arg
+    goto _item_25_buff
+_item_27_dissolve:
+    call _hit_check
+    call _get_adjusted_mana
+    call _get_target_adjusted_mana
+    call _roll_mana_vs_nothing
+    set r74.w = r74.w -- ra4.b
+    call _play_item_sound
+    call _play_item_animation
+    call _damage_message
+    call _apply_damage
+    call _absorb_hp
+    set (battle_script_index).b = $26.b
+    asmcall xr_execute_script
+    if r76.b = $00.b
+      goto _handle_defending_item
+    goto _target_fell_message
+_item_28_status_all_magic:
+    call _get_adjusted_mana
+    call _start_all_attack
+--  call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L067
+    call _set_target_script_arg
+    call _get_target_resist
+    if $00.b < ra6.b & r25.b
+      goto _L068
+    call _get_target_weakness
+    call _get_target_adjusted_mana
+    call _mana_hit_check_with_weakness
+    if rb4.b > rand $64
+      goto _L066
+    call _get_target_max_stack_size
+-   call _apply_status
+    call _refresh_status
+    inc r16.b
+    if r16.b < r03.b
+      goto -
+    call _status_inflict_message
+    if $00.b = r24.b & $90.b
+      goto _L067
+    call _get_target_current_stack_size
+    set (r30).b = $00.b
+    goto _L067
+_L066:
+    call _nothing_happened_message
+_L067:
+    inc r15.b
+    if r15.b <= r01.b
+      goto --
+    return
+_L068:
+    call _resist_message
+    goto _L066
+_item_2a_multiply:
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.max_stack
+    set r19.b = (r30.w).b
+    if r19.b >= $09.b
+      goto _item_03_nothing
+    inc r19.b
+    set (r30).b = r19.b
+    inc r30.w
+    set r1a.b = (r30.w).b
+    inc r1a.b
+    set (r30).b = r1a.b
+    set r32.w = r12.b * $20.b + r19.b * $08.b + {battle.data.1.stat.1-$08}.w
+    set (r32).b = $00.b
+    inc r32.b
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.hp
+    set (r32).w = (r30.w).w * $08.b / $0a.b
+    set (battle_script_index).b = $5c.b
+    asmcall xr_execute_script
+    call _play_item_sound
+    set r15.b = r12.b
+    call _play_item_animation
+    return
+_item_2b_apollo_aegis:
+    if $05.b = (battle_turn).b
+      set (hram.audio.bg_music).b = $12.b
+    set (battle_script_index).b = (battle_turn).b + $5c.b
+    goto _execute_script
+_item_2c_apollo_masmune1:
+    set (battle_script_index).b = $62.b
+    asmcall xr_execute_script
+    goto _item_11_absolute_str_weapon
+_item_2d_apollo_masmune2:
+    set r08.w = (battle.data.5.stat.1.hp).w
+    call _init_apollo_check
+    if r08.w < $2710.w
+      goto _L069
+    if r54.b > $14.b
+_L069:
+      call _apollo_deteriorate
+    goto _item_11_absolute_str_weapon
+_init_apollo_check:
+    set r0e.w = (battle.data.5.hp).w
+    set r54.b = (battle_turn).b
+    return
+_item_2e_apollo_flare:
+    set r08.w = (battle.data.5.stat.1.hp).w
+    call _init_apollo_check
+    if r08.w < $2710.w
+      goto _L070
+    if r54.b > $14.b
+_L070:
+      call _apollo_deteriorate
+    goto _item_21_elemental_all_magic
+_apollo_deteriorate:
+    set r00.b = $00.b
+-   call _get_r00_current_stack_size
+    if r1a.b > $00.b
+      goto _L071
+    inc r00.b
+    if r00.b <= $04.b
+      goto -
+_L071:
+    set ({script_arg_battle+$04}).w = r00.b
+    set (battle_script_index).b = $63.b
+    set (hram.audio.bg_music).b = $04.b
+    asmcall xr_execute_script
+    set rc0.b = $01.b
+    return
+_item_30_apollo_expode:
+    set r16.b = $00.b
+    set (battle_script_index).b = $64.b
+    asmcall xr_execute_script
+    set r15.b = $08.b
+    if $01.b = (battle.data.4.current_stack).b
+      goto _L073
+    call _play_item_sound
+    call _play_item_animation
+    set (battle_script_index).b = $66.b
+    asmcall xr_execute_script
+    call _init_target
+-   call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L072
+    call _set_target_script_arg
+    call _get_base_apollo_explode_damage
+    set r74.w = r74.w / $04.b
+    call _apply_damage
+    call _damage_message
+    if r76.b = $00.b
+      goto _L072
+    call _target_fell_message
+_L072:
+    inc r15.b
+    if r15.b <= $04.b
+      goto -
+    goto _L076
+_L073:
+    set r60.b = $00.b
+    set rb7.b = $00.b
+    set (battle_script_index).b = $65.b
+    asmcall xr_execute_script
+    call _play_item_sound
+    call _play_item_animation
+    set (battle_script_index).b = $66.b
+    asmcall xr_execute_script
+-   set r30.w = r60.b * $0100.w + battle.data.1.current_stack
+    if (r30.w).b = $01.b
+      inc rb7.b
+    inc r60.b
+    if r60.b <= $03.b
+      goto -
+    if rb7.b > $00.b
+      goto _L074
+    set ({script_arg_battle+$04}).w = $04.b
+    call _get_base_apollo_explode_damage
+    set r15.b = $04.b
+    call _apply_damage
+    call _damage_message
+    if r76.b = $00.b
+      goto _L072
+    set ({script_arg_battle+$04}).w = $04.b
+    call _target_fell_message
+    goto _L076
+_L074:
+    call _init_target
+-   call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L075
+    call _set_target_script_arg
+    call _get_base_apollo_explode_damage
+    set r74.w = r74.w / rb7.b
+    set (script_arg_uint16).w = r74.w
+    set (battle_animation_id).b = $00.b
+    set (battle_script_index).b = $67.b
+    asmcall xr_execute_script
+    asmcall x_fc_battle_animation
+_L075:
+    inc r15.b
+    if r15.b <= $03.b
+      goto -
+    set (battle.data.4.stat.1.hp).w = $00.b
+    set ({script_arg_battle+$04}).w = $04.b
+    call _target_fell_message
+    goto _L076
+_get_base_apollo_explode_damage:
+    set r74.b = rand r25.b
+    set r75.b = r24.b
+    return
+_L076:
+    set (battle.data.5.current_stack).b = $00.b
+    set rc0.b = $00.b
+    return
+_item_2f_smasher:
+    set r16.b = $00.b
+    if rc0.b = $00.b
+      goto _L078
+    if rc0.b = $01.b
+      goto _L083
+    set (hram.audio.bg_music).b = $13.b
+    set (battle_script_index).b = $6c.b
+    asmcall xr_execute_script
+    set (battle_animation_id).b = $19.b
+    set (hram.audio.sfx).b = $18.b
+    asmcall x_fc_battle_animation
+    call _init_target
+-   call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L077
+    set r74.w = rand r25.b * $12.b + raa.b
+    call _apply_damage
+    call _set_target_script_arg
+    call _damage_message
+    set (hram.audio.sfx).b = $28.b
+    set (battle_animation_id).b = $00.b
+    asmcall x_fc_battle_animation
+    if r76.b > $00.b
+      call _target_fell_message
+_L077:
+    inc r15.b
+    if r15.b <= $04.b
+      goto -
+    set (battle_animation_id).b = $1a.b
+    asmcall x_fc_battle_animation
+    return
+_L078:
+    set r60.b = $00.b
+    set r74.w = $00.b
+-   set (script_arg_uint16).w = r60.b + $01.b
+    set r30.w = {cscript_vars+$cb}.w + r60.b
+    if (r30.w).b = $01.b
+      goto _L079
+    set r74.w = rand r25.b + r74.w + r25.b
+    set (battle_script_index).b = $6a.b
+    asmcall xr_execute_script
+    set (battle_animation_id).b = $15.b + r60.b
+    set (hram.audio.sfx).b = $25.b
+    asmcall x_fc_battle_animation
+    set (battle_animation_id).b = $00.b
+    asmcall x_fc_battle_animation
+    goto _L080
+_L079:
+    set r30.w = r60.b * $02.b + {cscript_vars+$c3}.w
+    set (r30).w = (r30.w).w -- $fb.b
+    set (battle_script_index).b = $68.b
+    asmcall xr_execute_script
+    if (r30.w).w = $00.b
+      goto _L082
+_L080:
+    inc r60.b
+    if r60.b <= $03.b
+      goto -
+    call _init_target
+-   call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L081
+    call _set_target_script_arg
+    call _apply_damage
+    call _damage_message
+    if r76.b > $00.b
+      call _target_fell_message
+_L081:
+    inc r15.b
+    if r15.b <= $04.b
+      goto -
+    return
+_L082:
+    set r30.w = {cscript_vars+$cb}.w + r60.b
+    set (r30).b = $00.b
+    dec rcf.b
+    set (battle_script_index).b = $69.b
+    asmcall xr_execute_script
+    goto _L080
+_L083:
+    set (hram.audio.bg_music).b = $11.b
+    goto _item_31_str_weapon
+_item_09_heal_all_magic:
+    call _get_adjusted_mana
+    call _elemental_magi_mana_adjust
+    set (battle_script_index).b = $04.b
+    asmcall xr_execute_script
+    call _play_item_sound
+    if r12.b <= $04.b
+      goto _L084
+    if r15.b = $09.b
+      goto _L085
+-   call _play_item_animation
+    call _setup_enemy_loop
+    goto _L086
+_L084:
+    if r15.b = $09.b
+      goto -
+_L085:
+    call _setup_party_loop
+_L086:
+    call _get_target_current_stack_size
+    if r1a.b = $00.b
+      goto _L088
+    call _get_target_adjusted_mana
+    call _roll_healing_mana_vs_mana
+    set rb7.b = $00.b
+    call _get_target_max_stack_size
+-   call _get_target_status
+    if $00.b < r07.b & $90.b
+      goto _L087
+    call _get_target_hp_addr
+    set (r32).w = (r32.w).w + rb5.w
+    inc rb7.b
+    call _cap_healing
+_L087:
+    inc r16.b
+    if r16.b < r03.b
+      goto -
+    if rb7.b = $00.b
+      goto _L088
+    call _healing_message
+_L088:
+    inc r15.b
+    if r15.b <= r01.b
+      goto _L086
+    return
+_item_0b_heart:
+    call _init_target
+-   call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1
+    set r88.w = r30.w + {battle.data.1.current_stack-battle.data.1}.b
+    set (r88).b = (r30.w).b
+    set r32.w = r30.w + {battle.data.1.stat.1.status-battle.data.1}.b
+    set (r32).b = $00.b
+    set r88.w = r30.w + {battle.data.1.hp-battle.data.1}.b
+    set r32.w = r30.w + {battle.data.1.stat.1.hp-battle.data.1}.b
+    set (r32).w = (r88.w).w
+    inc r15.b
+    if r15.b <= $04.b
+      goto -
+    set (battle_script_index).b = $36.b
+    goto _execute_script
+_item_29_critical:
+    call _get_first_target
+    set (battle_script_index).b = $42.b
+    asmcall xr_execute_script
+    call _get_target_monster_id
+    if ra8.b > $f0.b
+      goto +
+    if rand $64 <= $1e.b
+      goto _L089
++   set rb8.b = rand raa.b
+    set r74.w = raa.b * r24.b + rb8.b
+    call _play_item_sound
+    call _play_item_animation
+    call _damage_message
+    call _apply_damage
+    if r76.b = $00.b
+      return
+    goto _target_fell_message
+_L089:
+    set (hram.audio.sfx).b = $1a.b
+    set rf5.b = r15.b
+    set (battle_animation_id).b = $c7.b
+    asmcall x_fc_battle_animation
+    set (battle_script_index).b = $43.b
+    asmcall xr_execute_script
+    set r0a.w = $00.b
+    call _get_target_hp_addr
+    set (r32).w = r0a.b
+    call _target_fell_message
+    goto _death_check
+_handle_defending_item:
+    call _get_target_item
+    call _get_target_item_data_1
+    set ({script_arg_battle+$02}).w = r17.w
+    if $00.b < rb0.b & $01.b
+      call _handle_counter_attack
+    if $00.b < rb0.b & $02.b
+      call _handle_danger_skin
+    if $00.b < rb0.b & $04.b
+      call _handle_burning
+    return
+_handle_counter_attack:
+    set (battle_script_index).b = $44.b
+    asmcall xr_execute_script
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.str
+    set ra2.b = (r30.w).b
+    if $00.b < r07.b & $04.b
+      set ra2.b = ra2.b / $02.b
+    call _get_target_battle_data_offset_upper
+    call _get_battle_data_magi_lower
+    if (r30.w).w = $0100.w
+      set ra2.b = (magi_list).b & $0f.b + $05.b + ra2.b
+    call _get_target_item_data_4
+    if r74.w < ra2.b * $02.b
+      set r74.w = ra2.b * $02.b
+    set r74.w = r74.w * rb1.b / $0a.b + ra2.b
+    goto _handle_counter_damage_roll
+_handle_danger_skin:
+    set (battle_script_index).b = $44.b
+    asmcall xr_execute_script
+    call _get_target_item_data_4
+    call _get_resist
+    call _get_target_item_data_5
+    if $00.b < rad.b & rb2.b
+      goto ++
+    call _get_weakness
+    call _get_adjusted_mana
+    call _get_target_adjusted_mana
+    set rb4.b = $00.b
+    if $00.b < rae.b & rb2.b
+      set rb4.b = rac.b -- ra4.b * $02.b + $32.b
+    if rb4.b < rand $64
+      goto _L091
+    goto _L090
+++  call _resist_message
+_L090:
+    goto _nothing_happened_message
+_L091:
+    call _init_battle_stat_offset_status
+    call _add_battle_stat_offset
+    set (r32).b = (r32.w).b | rb1.b
+    call _play_target_item_sound
+    call _play_counter_item_animation
+    set r24.b = rb1.b
+    set r15.b = r12.b
+    call _status_inflict_message
+    if $00.b < (r32.w).b & $90.b
+      call _kill_one_attacker
+    return
+_handle_burning:
+    set (battle_script_index).b = $44.b
+    asmcall xr_execute_script
+    call _get_target_item_data_5
+    call _get_resist
+    if $00.b < rad.b & rb2.b
+      goto ++
+    call _get_weakness
+    call _get_adjusted_mana
+    call _get_target_adjusted_mana
+    if $00.b < rae.b & rb2.b
+      set rac.b = $00.b
+    call _get_target_item_data_4
+    set rb8.b = rand ra4.b
+    set r74.w = ra4.b * rb1.b + rb8.b
+    set r39.w = r74.w * rac.b / $c8.b
+    set r74.w = r74.w -- r39.w
+    if r74.w > $00.b
+      goto _handle_counter_damage_roll
+    goto _no_damage_message
+_handle_counter_damage_roll:
+    call _apply_damage_to_attacker
+    call _play_target_item_sound
+    call _play_counter_item_animation
+    set (script_arg_uint16).w = r74.w
+    set (battle_script_index).b = $45.b
+    asmcall xr_execute_script
+    if r08.w > $00.b
+      return
+    call _attacker_fell_message
+    goto _handle_attacker_death
+++  set (battle_script_index).b = $46.b
+    asmcall xr_execute_script
+    goto _nothing_happened_message
+_apply_damage_multi:
+    set (script_arg_uint16).w = r74.w
+    call _set_target_script_arg
+    set (battle_script_index).b = $40.b
+    call _get_target_current_stack_size
+    if r1a.b = $01.b
+      set (battle_script_index).b = $41.b
+    asmcall xr_execute_script
+    call _get_target_max_stack_size
+    set rb7.b = $00.b
+-   call _get_target_status
+    if $00.b < r07.b & $90.b
+      goto +
+    call _apply_damage
+    if r76.b = $01.b
+      inc rb7.b
++   inc r16.b
+    if r16.b < r03.b
+      goto -
+    if rb7.b = $00.b
+      return
+    set ({script_arg_uint16+$02}).w = rb7.b
+    set (battle_script_index).b = $48.b
+    asmcall xr_execute_script
+    return
+_start_all_attack:
+    call _all_attack_message
+    call _play_item_sound
+    call _play_item_animation
+    set rb7.b = $00.b
+    if r12.b <= $04.b
+      goto +
+    if r15.b = $08.b
+      goto _setup_enemy_loop
+    goto _setup_party_loop
++   if r15.b = $08.b
+      goto _setup_party_loop
+    goto _setup_enemy_loop
+_hit_check:
+    call _attack_message
+    call _calculate_hit_score
+    if r76.b = $01.b
+      goto _exit
+    if rand $64 <= rb3.b
+      return
+    call _missed_message
+_exit:
+    exit
+_menu_item_00_healing_magic:
+    call _get_menu_target_status
+    if $00.b = r07.b & $90.b
+      goto _menu_healing_magic_helper
+_menu_item_fail:
+    set rf4.b = $01.b
+    return
+_menu_healing_magic_helper:
+    set r30.w = player.1.mana + r88.b
+    set rac.b = (r30.w).b
+    set r30.w = player.1.mana + r94.b
+    set ra4.b = (r30.w).b
+    call _roll_healing_mana_vs_mana
+_apply_menu_healing:
+    set r32.w = r94.b + player.1.current_hp
+    set (r32).w = (r32.w).w + rb5.w
+    set r30.w = r94.b + player.1.max_hp
+    if (r32.w).w > (r30.w).w
+      set (r32).w = (r30.w).w
+    goto _L095
+_menu_item_01_healing_potion:
+    call _get_menu_target_status
+    if $00.b = r07.b & $90.b
+      goto +
+    goto _menu_item_fail
++   inc r34.w
+    set r25.b = (r34.w).b
+    set rb5.w = rand r25.b + r24.b
+    goto _apply_menu_healing
+_menu_item_02_status_potion:
+    call _get_menu_target_status
+    set r06.b = r07.b & r24.b
+    if r06.b = r07.b
+      goto _menu_item_fail
+    set (r32).b = r06.b
+    goto _L095
+_menu_item_03_elixier:
+    set r36.w = r94.b + player.1.current_hp
+    set r30.w = r36.w + {player.1.max_hp-player.1.current_hp}.b
+    set (r36).w = (r30.w).w
+    call _get_menu_target_status
+    set (r32).b = $00.b
+    set r30.w = r94.b + player.1.race
+    set r89.b = (r30.w).b
+    if r89.b = $00.b
+      goto _L095
+    call _init_item_index
+-   set r30.w = r04.b * $02.b + r94.b + player.1.inventory
+    set r74.w = (r30.w).w
+    if r74.b = $ff.b
+      goto _L094
+    set r34.w = r74.b * $08.b + {data_items+$02}.w
+    if r00.b < (r34.w).b & $80.b
+      goto _L094
+    set r32.w = data_item_usage + r74.b
+    set r75.b = (r32.w).b
+    if r89.b = $01.b
+      goto +
+    if r89.b = $03.b
+      set r75.b = r75.b / $02.b
+--  set (r30).w = r74.w
+_L094:
+    inc r04.b
+    if r04.b <= $07.b
+      goto -
+_L095:
+    call _play_menu_item_sound
+    return
++   if r74.b < $80.b
+      goto _L094
+    goto --
+_menu_item_04_teleport:
+    set rf4.b = $02.b
+    return
+_menu_item_05_tent:
+    set rf4.b = $03.b
+    goto _L095
+_menu_item_06_prism:
+    set rf4.b = $04.b
+    return
+_menu_item_07_stat_potion:
+    set r30.w = r94.b + player.1.race
+    if (r30.w).b > $01.b
+      goto _menu_item_fail
+    set r94.w = player.1.str + r24.b + r94.b
+    if (r94.w).b >= $63.b
+      goto _menu_item_fail
+    set (r94).b = (r94.w).b + $03.b
+    set rf4.b = $05.b + r24.b
+    goto _L095
+_menu_item_08_body_potion:
+    set r30.w = r94.b + $c205.w
+    if (r30.w).b > $01.b
+      goto _menu_item_fail
+    set r94.w = $c209.w + r94.b
+    if (r94.w).w >= $03e7.w
+      goto _menu_item_fail
+    set (r94).w = (r94.w).w + $28.b
+    set rf4.b = $08.b
+    goto _L095
+_menu_item_09_heal_all_magic:
+    set r12.b = $00.b
+-   call _get_player_data_offset_upper
+    set r94.b = rd0.b
+    call _menu_item_00_healing_magic
+    inc r12.b
+    inc r12.b
+    if r12.b <= $08.b
+      goto -
+    set rf4.b = $00.b
+    goto _L095
+_unused_byte2:
+    .db $00
+_get_r00_current_stack_size:
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.current_stack
+    set r1a.b = (r30.w).b
+    return
+_get_target_current_stack_size:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.current_stack
+    set r1a.b = (r30.w).b
+    return
+_get_equipment:
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.inventory
+    set r30.w = r04.b * $03.b + r30.w
+    set r13.w = (r30.w).w
+    return
+_get_max_stack_size:
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.max_stack
+    set r03.b = (r30.w).b
+    return
+_get_monster_id:
+    call _get_r00_battle_data_offset_upper
+    set r30.b = <battle.data.1.monster_id
+    set r1b.b = (r30.w).b
+    return
+_get_item_data_0:
+    set r34.w = r13.w * $08.b + data_items
+    set r20.b = (r34.w).b
+    return
+_get_item_data_4:
+    set r34.w = r13.w * $08.b + {data_items+$04}.w
+    set r24.b = (r34.w).b
+    return
+_get_item_data_5:
+    set r34.w = r13.w * $08.b + {data_items+$05}.w
+    set r25.b = (r34.w).b
+    return
+_get_r00r02_status:
+    call _init_battle_stat_offset_status
+    call _add_r0r2_battle_stat_offset
+    set r06.b = (r32.w).b
+    return
+_get_status:
+    call _init_battle_stat_offset_status
+    call _add_battle_stat_offset
+    set r06.b = (r32.w).b
+    return
+_get_target_status:
+    call _init_battle_stat_offset_status
+    call _add_target_battle_stat_offset
+    set r07.b = (r32.w).b
+    return
+_set_status:
+    call _init_battle_stat_offset_status
+    call _add_battle_stat_offset
+    set (r32).b = r06.b
+    return
+_set_used_item_id:
+    set r32.w = {battle.data.1.stat.1.item_id-battle.data.1.stat.1}.b
+    call _add_r0r2_battle_stat_offset
+    set (r32).w = r13.w
+    return
+_get_current_actor:
+    set r30.w = (current_actor_index).b * $02.b + actors
+    set r11.w = (r30.w).w
+    return
+_get_target_item_data_5:
+    set r34.w = r17.w * $08.b + {data_items+$05}.w
+    set rb2.b = (r34.w).b
+    return
+_get_resist:
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.resist
+    set rad.b = (r30.w).b
+    return
+_get_weakness:
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.weak
+    set rae.b = (r30.w).b
+    return
+_get_target_resist:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.resist
+    set ra6.b = (r30.w).b
+    return
+_get_target_weakness:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.weak
+    set ra7.b = (r30.w).b
+    return
+_get_adjusted_mana:
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.mana
+    set rac.b = (r30.w).b
+    call _get_battle_data_offset_upper
+    call _get_battle_data_magi_lower
+    if (r30.w).w = $0102.w
+      set rac.b = ({magi_list+$04}).b & $0f.b + $05.b + rac.b
+    return
+_get_target_adjusted_mana:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.mana
+    set ra4.b = (r30.w).b
+    call _get_target_battle_data_offset_upper
+    call _get_battle_data_magi_lower
+    if (r30.w).w = $0102.w
+      set ra4.b = ({magi_list+$04}).b & $0f.b + $05.b + ra4.b
+    return
+_handle_attacker_death:
+    call _init_battle_stat_offset_status
+    call _add_battle_stat_offset
+    set (r32).b = (r32.w).b | $80.b
+_kill_one_attacker:
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.current_stack
+    set (r30).b = (r30.w).b - $01.b
+    return
+_apply_damage_to_attacker:
+    set r32.w = {battle.data.1.stat.1.hp-battle.data.1.stat.1}.b
+    call _add_battle_stat_offset
+    set r08.w = (r32.w).w
+    set r08.w = r08.w -- r74.w
+    set rb5.w = (r32.w).w - r08.w
+    set (r32).w = r08.w
+    return
+_get_target_item_data_4:
+    set r34.w = r17.w * $08.b + {data_items+$04}.w
+    set rb1.b = (r34.w).b
+    return
+_get_first_target:
+    set r16.b = $00.b
+-   call _get_target_status
+    if $00.b = r07.b & $90.b
+      return
+    inc r16.b
+    goto -
+_get_adjusted_str:
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.str
+    set raa.b = (r30.w).b
+    if $00.b < r06.b & $20.b
+      set raa.b = raa.b / $02.b
+    call _get_battle_data_offset_upper
+    call _get_battle_data_magi_lower
+    if (r30.w).w = $0100.w
+      set raa.b = (magi_list).b & $0f.b + $05.b + raa.b
+    return
+_apply_damage:
+    call _get_target_hp_addr
+    set r0a.w = (r32.w).w
+    set r0a.w = r0a.w -- r74.w
+    set rb5.w = (r32.w).w - r0a.w
+    set (r32).w = r0a.w
+_death_check:
+    set r76.b = $00.b
+    if r0a.w > $00.b
+      return
+    call _init_battle_stat_offset_status
+    call _add_target_battle_stat_offset
+    set (r32).b = (r32.w).b | $80.b
+    set r76.b = $01.b
+_kill_one_target:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.current_stack
+    set (r30).b = (r30.w).b - $01.b
+    return
+_apply_status:
+    call _init_battle_stat_offset_status
+    call _add_target_battle_stat_offset
+    set (r32).b = (r32.w).w | r24.b
+    return
+_get_target_family:
+    call _get_target_monster_id
+    set r36.w = data_monster_family + ra8.b
+    set ra9.b = (r36.w).b
+    return
+_get_target_monster_id:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.monster_id
+    set ra8.b = (r30.w).b
+    return
+_get_target_item:
+    set r32.w = {battle.data.1.stat.1.item_id-battle.data.1.stat.1}.b
+    call _add_target_battle_stat_offset
+    set r17.w = (r32.w).w
+    return
+_get_target_item_data_1:
+    set r34.w = r17.w * $08.b + {data_items+$01}.w
+    set rb0.b = (r34.w).b
+    return
+_get_target_raw_def:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.def
+    set ra5.b = (r30.w).b
+    return
+_adjust_def_curse:
+    if $00.b < r07.b & $20.b
+      set ra5.b = ra5.b / $02.b
+    return
+_get_adjusted_agl:
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.agl
+    set rab.b = (r30.w).b
+_adjust_agl:
+    if $00.b < r06.b & $40.b
+      set rab.b = rab.b / $02.b
+    call _get_battle_data_offset_upper
+    call _get_battle_data_magi_lower
+    if (r30.w).w = $0101.w
+      set rab.b = ({magi_list+$02}).b & $0f.b + $05.b + rab.b
+    return
+_roll_str_vs_def:
+    set rb8.b = rand raa.b
+    call _get_target_def_mitigation
+    set r74.w = raa.b * r24.b + rb8.b -- r74.w
+    return
+_roll_mana_vs_mana:
+    call _roll_mana_vs_nothing
+    set r39.w = r74.w * ra4.b / $c8.b
+    set r74.w = r74.w -- r39.w
+    return
+_get_target_max_stack_size:
+    set r16.b = $00.b
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.max_stack
+    set r03.b = (r30.w).b
+    return
+_get_target_hp_addr:
+    set r32.w = {battle.data.1.stat.1.hp-battle.data.1.stat.1}.b
+    call _add_target_battle_stat_offset
+    return
+_cap_healing:
+    call _get_target_battle_data_offset_upper
+    set r30.b = <battle.data.1.hp
+    if (r32.w).w > (r30.w).w
+      set (r32).w = (r30.w).w
+    return
+_apply_weapon_resist:
+    if $00.b < ra6.b & $02.b
+      set r74.w = r74.w / $02.b
+    return
+_adjust_weapon_damage:
+    call _get_target_resist
+    if $00.b < rb0.b & $08.b
+      set r74.w = r74.w / $02.b
+    call _apply_weapon_resist
+    return
+_calculate_hit_score:
+    set r76.b = $00.b
+    call _get_first_target
+_calculate_hit_score_with_target:
+    set r32.w = r15.b * $0100.w + battle.data.1.agl
+    set ra3.b = (r32.w).b
+    if $00.b < r07.b & $40.b
+      set ra3.b = ra3.b / $02.b
+    call _get_target_battle_data_offset_upper
+    call _get_battle_data_magi_lower
+    if (r30.w).w = $0101.w
+      set ra3.b = ({magi_list+$02}).b & $0f.b + $05.b + ra3.b
+    call _get_target_item
+    call _get_target_item_data_1
+    if $00.b = rb0.b & $08.b
+      goto +
+    call _get_target_item_data_5
+    if rand $64 > rb2.b + ra3.b
+      goto +
+    set r76.b = $01.b
+    call _play_target_item_sound
+    set (script_arg_battle).w = r17.w
+    set (battle_script_index).b = $2c.b
+    goto _execute_script
++   call _get_adjusted_agl
+    call _adjust_agl
+    set rb3.b = ra3.b -- rab.b * $02.b
+    set rb3.b = $61.b -- rb3.b
+    return
+_mana_hit_check_with_weakness:
+    set rb4.b = $00.b
+    if $00.b < ra7.b & r25.b
+      goto +
+    set rb4.b = ra4.b -- rac.b * $02.b + $32.b
+    return
++   call _weakness_message
+    return
+_play_item_animation:
+    if r15.b <= $04.b
+      goto _play_animation_0
+    if r15.b <= $07.b
+      goto _play_attacker_item_animation_against_target
+    if r12.b <= $04.b
+      goto _handle_player_vs_multi_attacker_item_animation
+    if r15.b = $09.b
+      goto _play_animation_0
+    set rf5.b = $09.b
+    goto _play_attacker_item_animation
+_play_animation_0:
+    set (battle_animation_id).b = $00.b
+    asmcall x_fc_battle_animation
+    return
+_play_attacker_item_animation:
+    set r36.w = r13.b * $08.b + {data_items+$06}.w
+-   set (battle_animation_id).b = (r36.w).b
+    asmcall x_fc_battle_animation
+    return
+_play_attacker_item_animation_against_target:
+    set rf5.b = r15.b
+    goto _play_attacker_item_animation
+_handle_player_vs_multi_attacker_item_animation:
+    if r15.b = $08.b
+      goto _play_animation_0
+    goto _play_attacker_item_animation_against_target
+_play_counter_item_animation:
+    if r12.b > $04.b
+      goto +
+    goto _play_animation_0
++   set r36.w = r17.b * $08.b + {data_items+$06}.w
+    set rf5.b = r12.b
+    goto -
+_play_item_animation2:
+    if r15.b <= $04.b
+      return
+    if r15.b <= $07.b
+      goto _play_attacker_item_animation_against_target
+    if r12.b <= $04.b
+      goto +
+    if r15.b = $09.b
+      return
+    set rf5.b = $09.b
+    goto _play_attacker_item_animation
++   if r15.b = $08.b
+      return
+    goto _play_attacker_item_animation_against_target
+_play_item_sound:
+    set r36.w = r13.w * $08.b + {data_items+$07}.w
+    set (hram.audio.sfx).b = (r36.w).b
+    return
+_play_target_item_sound:
+    set r36.w = r17.w * $08.b + {data_items+$07}.w
+    set (hram.audio.sfx).b = (r36.w).b
+    return
+_play_menu_item_sound:
+    set r36.w = rf0.w * $08.b + {data_items+$07}.w
+    set (hram.audio.sfx).b = (r36.w).b
+    return
+_damage_message:
+    set (script_arg_uint16).w = r74.w
+    set (battle_script_index).b = $41.b
+    goto _execute_script
+_attack_message:
+    set (battle_script_index).b = $20.b
+    goto _execute_script
+_single_or_multi_attack_message:
+    call _get_target_current_stack_size
+    if r1a.b = $01.b
+      goto _attack_message
+    set (battle_script_index).b = $2b.b
+    goto _execute_script
+_all_attack_message:
+    set (battle_script_index).b = $2f.b
+    goto _execute_script
+_helpful_attack_message:
+    set (battle_script_index).b = $29.b
+    goto _execute_script
+_resist_message:
+    set (battle_script_index).b = $33.b
+    goto _execute_script
+_weakness_message:
+    set (battle_script_index).b = $32.b
+    goto _execute_script
+_attacker_fell_message:
+    set (battle_script_index).b = $07.b
+    goto _execute_script
+_nothing_happened_message:
+    set (hram.audio.sfx).b = $15.b
+    set (battle_script_index).b = $0d.b
+    goto _execute_script
+_no_damage_message:
+    set (hram.audio.sfx).b = $08.b
+    set (battle_script_index).b = $22.b
+    goto _execute_script
+_handle_reflect:
+    call _get_first_target
+    call _get_target_item
+    call _get_target_item_data_1
+    if $00.b = rb0.b & $10.b
+      return
+    set rb8.b = r12.b
+    set r12.b = r15.b
+    set r15.b = rb8.b
+    set (script_arg_battle).w = r12.b
+    set ({script_arg_battle+$04}).w = r15.b
+    set (battle_script_index).b = $31.b
+_execute_script:
+    asmcall xr_execute_script
+    return
+_absorb_hp:
+    set r32.w = {battle.data.1.stat.1.hp-battle.data.1.stat.1}.b
+    call _add_battle_stat_offset
+    set r08.w = (r32.w).w
+    set (r32).w = (r32.w).w + rb5.w
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.hp
+    if (r32.w).w > (r30.w).w
+      set (r32).w = (r30.w).w
+    set rb5.w = (r32.w).w - r08.w
+    set (script_arg_uint16).w = rb5.w
+    return
+_status_recovery_message:
+    set r61.b = $00.b
+-   if $00.b < r76.b & $80.b
+      goto +
+--  set r76.b = r76.b << $01.b
+    inc r61.b
+    if r61.b <= $07.b
+      goto -
+    return
++   set (battle_script_index).b = $49.b + r61.b
+    asmcall xr_execute_script
+    goto --
+_status_inflict_message:
+    set r76.b = r24.b
+    set r61.b = $00.b
+-   if $00.b < r76.b & $80.b
+      goto +
+--  set r76.b = r76.b << $01.b
+    inc r61.b
+    if r61.b <= $07.b
+      goto -
+    return
++   call _set_target_script_arg
+    set (battle_script_index).b = $1b.b
+    asmcall xr_execute_script
+    set (battle_script_index).b = $51.b + r61.b
+    asmcall xr_execute_script
+    goto --
+_get_menu_target_status:
+    set r32.w = player.1.status + r94.b
+    set r07.b = (r32.w).b
+    return
+_refresh_status:
+    set r07.b = (r32.w).b
+    if $00.b = r07.b & $80.b
+      goto +
+    inc r32.w
+    set (r32).w = $00.b
++   set r32.w = {battle.data.1.stat.1.item_id-battle.data.1.stat.1}.b
+    call _add_target_battle_stat_offset
+    if $00.b < r07.b & $01.b
+      set (r32).w = $010f.w
+    if $00.b < r07.b & $02.b
+      set (r32).w = $010e.w
+    return
+_get_race:
+    call _get_battle_data_offset_upper
+    set r30.b = <battle.data.1.race
+    set r89.b = (r30.w).b
+    return
+_get_player_data_offset_upper:
+    set rd0.b = (party_order).b >> r12.b & $03.b * $20.b
+    if r12.b = $08.b
+      set rd0.b = $80.b
+    return
+_adjust_def_magi:
+    call _get_target_battle_data_offset_upper
+    call _get_battle_data_magi_lower
+    if (r30.w).w = $0103.w
+      set ra5.b = ({magi_list+$06}).b & $0f.b + $05.b + ra5.b
+    return
+_elemental_magi_mana_adjust:
+    call _get_battle_data_offset_upper
+    call _get_battle_data_magi_lower
+    set r53.w = (r30.w).w
+    set r30.w = r53.w * $08.b + {data_items+$01}.w
+    if $00.b = (r30.w).b & $20.b
+      return
+    set r30.w = r53.w * $08.b + {data_items+$04}.w
+    if $00.b = (r25.w).b & (r30.w).b
+      return
+    set r30.w = r53.b * $02.b + magi_list
+    set rac.b = (r30.w).b & $0f.b + rac.b + $05.b
+    return
+_healing_message:
+    set (script_arg_uint16).w = rb5.w
+    call _set_target_script_arg
+    set (battle_script_index).b = $2a.b
+    goto _execute_script
+_set_target_script_arg:
+    set ({script_arg_battle+$04}).w = r15.b
+    return
+_setup_party_loop:
+    call _init_target
+    set r01.b = $04.b
+    return
+_setup_enemy_loop:
+    set r15.b = $05.b
+    set r01.b = $07.b
+    return
+_get_r00_battle_data_offset_upper:
+    set r31.b = r00.b * $01.b + >battle.data.1
+    return
+_get_battle_data_offset_upper:
+    set r31.b = r12.b + >battle.data.1
+    return
+_get_target_battle_data_offset_upper:
+    set r31.b = r15.b + >battle.data.1
+    return
+_get_target_def_mitigation:
+    set r74.w = ra5.b * $05.b
+    return
+_add_battle_stat_offset:
+    set r32.w = r12.b * $20.b + r11.b * $08.b + battle.data.1.stat.1 + r32.w
+    return
+_add_target_battle_stat_offset:
+    set r32.w = r15.b * $20.b + r16.b * $08.b + battle.data.1.stat.1 + r32.w
+    return
+_add_r0r2_battle_stat_offset:
+    set r32.w = r00.b * $20.b + r02.b * $08.b + battle.data.1.stat.1 + r32.w
+    return
+_init_item_index:
+    set r04.b = $00.b
+    return
+_roll_mana_vs_nothing:
+    set rb8.b = rand rac.b
+    set r74.w = rac.b * r24.b + rb8.b
+    return
+_init_target:
+    set r15.b = $00.b
+    return
+_get_battle_data_magi_lower:
+    set r30.b = {<(battle.data.1.inventory+$18)}.b
+    return
+_roll_healing_mana_vs_mana:
+    set rb8.b = rand rac.b
+    set rb5.w = rac.b + ra4.b * r24.b + rb8.b
+    return
+_init_battle_stat_offset_status:
+    set r32.w = {battle.data.1.stat.1.status-battle.data.1.stat.1}.b
+    return
+
+{{
+.ends
+}}
+
